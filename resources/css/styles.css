@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway:300,400|Lato:300,400');
+
+body{
+	background-color: rgb(225,225,225);
+	background-image: url("../images/new_year_background.png")
+}
+
+.titleContainer{
+	font-family: 'Raleway';
+	position:relative;
+	background-color:white;
+	box-shadow: 1px 1px 4px rgba(0,0,0,.4);
+	margin:.5em;
+}
+
+.title{
+	padding:.1em;
+	font-weight:300;
+	font-size: 40px;
+	color: #000029;
+	font-weight: 300;
+}
+
+.subTitle{
+	padding:.3em;
+	font-size: 22px;
+	color: #333333;
+	font-family: 'Raleway';
+}
+
+.pageContainer{
+	position: absolute;
+	top:0px;
+	left: 12.5vw;
+	height: 15120px;
+	width: 75vw;
+	background-color:#333333;
+	box-shadow:1px 1px 4px rgba(0,0,0,.4);
+}
+
+.method-content{
+	font-family: 'Lato';
+	background-color: white;
+	box-shadow: 1px 1px 4px rgba(0,0,0,.4);
+	margin:.5em;
+}
+
+.content{
+	position:relative;
+	height: 15000px;
+	margin:.5em;
+	background-color:white;
+	box-shadow: 1px 1px 4px rgba(0,0,0,.4);
+}
+
+.jobText{
+	font-family: 'Lato';
+	font-weight:300;
+}
