@@ -136,7 +136,7 @@ function drawVis(dataContainer){
 		.append("g")
 		.attr("class", "legend")
 		.attr("transform", function(d,i){
-			return "translate(1200, " + (yScale(i) + i*6) + ")";
+			return "translate(" + (w-224) +", " + (yScale(i) + i*6) + ")";
 		})
 		.each(function(d,i){
 			d3.select(this)
