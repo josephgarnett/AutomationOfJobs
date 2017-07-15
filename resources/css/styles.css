@@ -32,7 +32,6 @@ body{
 	position: absolute;
 	top:0px;
 	left: 12.5vw;
-	height: 15120px;
 	width: 75vw;
 	background-color:#333333;
 	box-shadow:1px 1px 4px rgba(0,0,0,.4);
@@ -43,6 +42,27 @@ body{
 	background-color: white;
 	box-shadow: 1px 1px 4px rgba(0,0,0,.4);
 	margin:.5em;
+}
+
+.controls-panel{
+	font-family: 'Lato';
+	background-color: white;
+	margin: .5em;
+}
+
+.control{
+	margin: 2em;
+}
+
+.control.search{
+	text-indent: 24px;
+	height: 24px;
+}
+
+.search.icon{
+	position:relative;
+	left:52px;
+	top: 6px;
 }
 
 .content{
