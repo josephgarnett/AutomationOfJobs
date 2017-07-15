@@ -34,7 +34,7 @@ function drawVis(dataContainer){
 		
 	var yScale = d3.scaleLinear()
 		.domain([0,data.length-1])
-		.range([50, h-50])
+		.range([200, h-50])
 		
 	var fontScale = d3.scaleLinear()
 		.domain([702, 1])
@@ -136,7 +136,7 @@ function drawVis(dataContainer){
 				.attr("x", 0)
 				.attr("y", 0)
 				.attr("height",22)
-				.attr("width",993)
+				.attr("width",w-100)
 				.attr("fill", "silver");
 				
 			d3.select(this)
@@ -174,12 +174,14 @@ function drawVis(dataContainer){
 		.append("g")
 		.attr("class", "legend")
 		.attr("transform", function(d,i){
-			return "translate(" + (w-224) +", " + (yScale(i) + i*6) + ")";
+			var x = (Math.floor(i/4) * 200) + 50;
+			var y = ((i%4) * 30) + 40;
+			return "translate(" + x + ", " + y + ")";
 		})
 		.each(function(d,i){
 			d3.select(this)
 				.append("rect")
-				.attr("x", 196)
+				.attr("x", 0)
 				.attr("y", 0)
 				.attr("height",24)
 				.attr("width",24)
@@ -188,11 +190,11 @@ function drawVis(dataContainer){
 			d3.select(this)
 				.append("text")
 				.attr("class", "jobText")
-				.attr("x",190)
+				.attr("x",28)
 				.attr("y", 19)
-				.attr("text-anchor", "end")
+				.attr("text-anchor", "start")
 				.attr("font-size", function(d){
-					return 12;
+					return 10;
 				})
 				.text(d.replace(" Occupations", ""));
 		})
@@ -279,7 +281,7 @@ function drawVis(dataContainer){
 						.enter()
 						.append("rect")
 						.attr("height",22)
-						.attr("width",993)
+						.attr("width",w-100)
 						.attr("x", 0)
 						.attr("y", 0)
 						.attr("fill", "rgba(255, 255, 255, 0)")
