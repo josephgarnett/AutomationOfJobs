@@ -188,23 +188,51 @@ function drawVis(dataContainer){
 		
 		
 		function updateTable(filteredData){
-						
+			
 			var jobGroups = svg.selectAll(".jobGroups")
 				.data(filteredData, function(d){ return d.occupation });
-															
+						
+			var animations = {}
+			
+			animations.exit = {}
+			animations.exit.duration = 300;
+			animations.exit.delay = 0;
+			
+			animations.update = {}
+			animations.update.duration = 500;
+			animations.update.delay = jobGroups._exit.length === 0 ? 0 : animations.exit.duration;
+			
+			animations.enter = {};
+			animations.enter.duration = 300;
+			animations.enter.delay = function(){
+				var delay = 0;
+				jobGroups._exit.length > 0 ? delay += animations.exit.duration : delay += 0;
+				jobGroups._groups.length !== jobGroups._enter.length ? delay += animations.update.duration : delay += 0;
+				return delay;
+			};
+			
 			jobGroups.exit()
 				.transition()
-				.attr("transform", function(d,i){
-					return "translate(0, " + yScale(i) + ")";
+				.duration(animations.exit.duration)
+				.delay(animations.exit.delay)
+				.attrTween("transform", function(d,index){
+					var node = this;
+					var y = parseFloat(
+						$(node)
+							.attr("transform")
+							.replace(/translate\(\d+,\s*(\d+\.{0,}\d*)\)/g, "$1"));
+					var i = d3.interpolateNumber(50, -200);
+					return function(t){
+						return "translate(" + i(t) + "," + y + ")";
+					}
 				})
-				.attr("opacity", 0)
 				.remove();
 			
-			jobGroups.enter()
+			var enter = jobGroups.enter()
 				.append("g")
 				.attr("class", "jobGroups")
 				.attr("transform", function(d,i){
-					return "translate(50, " + yScale(i) + ")";
+					return "translate(200, " + yScale(i) + ")";
 				})
 				.each(function(d){			
 					var g = d3.select(this)
@@ -216,9 +244,10 @@ function drawVis(dataContainer){
 						.attr("width",993)
 						.attr("x", 0)
 						.attr("y", 0)
-						.attr("fill", "rgb(255, 255, 255)")
+						.attr("fill", "rgba(255, 255, 255, 0)")
 						.transition()
-						.duration(300)
+						.duration(animations.enter.duration)
+						.delay(animations.enter.delay)
 						.attr("fill",function(d){
 							return filteredData.length === FULL_DATA_SET.length ? "silver" : colorScale(d.occupationMajorGroup);
 						});
@@ -234,16 +263,32 @@ function drawVis(dataContainer){
 						.text(rankFormatter(d.rank) + " | " + d.occupation + " | " + (d.probability * 100).toFixed(2) + "%")
 						.attr("opacity", 0)
 						.transition()
-						.duration(300)
+						.duration(animations.enter.duration)
+						.delay(animations.enter.delay)
 						.attr("opacity", 1);
 				});
+			
+			enter.transition()
+				.duration(animations.enter.duration)
+				.delay(animations.enter.delay)
+				.attrTween("transform", function(d,index){
+					var node = this;
+					var y = parseFloat(
+						$(node)
+							.attr("transform")
+							.replace(/translate\(\d+,\s*(\d+\.{0,}\d*)\)/g, "$1"));
+					var i = d3.interpolateNumber(200, 50);
+					return function(t){
+						return "translate(" + i(t) + "," + y + ")";
+					}
+				})
 				
 			jobGroups
 				.transition()
-				.duration(500)
+				.duration(animations.update.duration)
 				.attrTween("transform", function(d,index){
 					var node = this;
-					var y = parseFloat($(node).attr("transform").replace(/translate\(\d+,\s(\d+\.*\d*)\)/g, "$1"));
+					var y = parseFloat($(node).attr("transform").replace(/translate\(\d+,\s*(\d+\.{0,}\d*)\)/g, "$1"));
 					var i = d3.interpolateNumber(y, yScale(index));
 					return function(t){
 						return "translate(50, " + i(t) + ")";
