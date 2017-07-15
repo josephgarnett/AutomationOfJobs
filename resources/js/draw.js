@@ -188,8 +188,9 @@ function drawVis(dataContainer){
 		
 		
 		function updateTable(filteredData){
+						
 			var jobGroups = svg.selectAll(".jobGroups")
-				.data(filteredData);
+				.data(filteredData, function(d){ return d.occupation });
 															
 			jobGroups.exit()
 				.transition()
@@ -206,14 +207,22 @@ function drawVis(dataContainer){
 					return "translate(50, " + yScale(i) + ")";
 				})
 				.each(function(d){			
-					d3.select(this)
+					var g = d3.select(this)
+					var rect = g.selectAll(".rect")
+						.data([d])
+						.enter()
 						.append("rect")
-						.attr("x", 0)
-						.attr("y", 0)
 						.attr("height",22)
 						.attr("width",993)
-						.attr("fill", filteredData.length === FULL_DATA_SET.length ? "silver" : colorScale(d.occupationMajorGroup));
-						
+						.attr("x", 0)
+						.attr("y", 0)
+						.attr("fill", "rgb(255, 255, 255)")
+						.transition()
+						.duration(300)
+						.attr("fill",function(d){
+							return filteredData.length === FULL_DATA_SET.length ? "silver" : colorScale(d.occupationMajorGroup);
+						});
+												
 					d3.select(this)
 						.append("text")
 						.attr("class", "jobText")
@@ -222,10 +231,28 @@ function drawVis(dataContainer){
 						.attr("font-size", function(d){
 							return 18;
 						})
-						.text(rankFormatter(d.rank) + " | " + d.occupation + " | " + (d.probability * 100).toFixed(2) + "%");
+						.text(rankFormatter(d.rank) + " | " + d.occupation + " | " + (d.probability * 100).toFixed(2) + "%")
+						.attr("opacity", 0)
+						.transition()
+						.duration(300)
+						.attr("opacity", 1);
 				});
 				
 			jobGroups
+				.transition()
+				.duration(500)
+				.attrTween("transform", function(d,index){
+					var node = this;
+					var y = parseFloat($(node).attr("transform").replace(/translate\(\d+,\s(\d+\.*\d*)\)/g, "$1"));
+					var i = d3.interpolateNumber(y, yScale(index));
+					return function(t){
+						return "translate(50, " + i(t) + ")";
+					}
+				})
+				.select("rect")
+				.attr("fill",function(d){ 
+					return filteredData.length === FULL_DATA_SET.length ? "silver" : colorScale(d.occupationMajorGroup);
+				})
 				.select("text")
 				.attr("opacity", 0)
 				.transition()
@@ -234,14 +261,9 @@ function drawVis(dataContainer){
 					return rankFormatter(d.rank) + " | " + d.occupation + " | " + (d.probability * 100).toFixed(2) + "%";
 				});
 				
-			jobGroups
-				.select("rect")
-				.transition()
-				.duration(100)
-				.attr("fill", function(d){ return filteredData.length === FULL_DATA_SET.length ? "silver" : colorScale(d.occupationMajorGroup);})
 				
 			jobGroups.on("click", null);
-			jobGroups.on("click", function(d){
+			svg.selectAll(".jobGroups").on("click", function(d){
 				var currentOccupation = d.occupationMajorGroup;
 				var color = colorScale(d.occupationMajorGroup)
 				svg.selectAll(".jobGroups")
