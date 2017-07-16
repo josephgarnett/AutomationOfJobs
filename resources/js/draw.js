@@ -6,9 +6,6 @@ $(document).ready(function(){
 	})
 	.fail(function(data){
 		console.log("fail")
-	})
-	.always(function(data){
-		console.log(data);
 	});
 });
 
@@ -34,7 +31,7 @@ function drawVis(dataContainer){
 		
 	var yScale = d3.scaleLinear()
 		.domain([0,data.length-1])
-		.range([200, h-50])
+		.range([175, h-50])
 		
 	var fontScale = d3.scaleLinear()
 		.domain([702, 1])
@@ -89,39 +86,47 @@ function drawVis(dataContainer){
 	};
 	
 	var searchString = "";
-	$("#jobSearch").keypress(function(e){
-		if(searchString.length > 3){
-			
+	$("#jobSearch").on("keyup",function(e){
+		$(".suggestionsContainer").remove();
+		if(e.keyCode == 8 || e.keyCode == 46){
+			searchString = $(this).val()
+			if(searchString.length > 3){
+				$(".controls-panel").append(
+					new FilterSuggestions(FULL_DATA_SET)
+						.withFilter(searchString)
+						.build());
+			}
+		}else if( e.key.length == 1){
+			searchString += e.key;
+			if(searchString.length >= 3){
+				$(".controls-panel").append(
+					new FilterSuggestions(FULL_DATA_SET)
+						.withFilter(searchString)
+						.build());
+			}
 		}
-		console.log(e.key);
-		searchString += e.key;
+		$(".suggestion").click(function(){
+			$(".suggestionsContainer").remove()
+			var occupation = this.textContent;
+			var occupationMajorGroup;
+			console.log(occupation);
+			var filteredData = FULL_DATA_SET.filter(function(d){
+				if(d.occupation == occupation){
+					occupationMajorGroup = d.occupationMajorGroup;
+					return d;
+				}
+			});
+			updateTable(filteredData, occupationMajorGroup);
+		});
 	});
 	
-	//needs to be a function that returns a suggestion box, based on the input search string
-	/*var suggestionBox = $("<div>");
-	
-	var suggestions = FULL_DATA_SET.map(function(d,i){
-		if(d.occupation.indexOf(searchString) > -1){
-			return $("<div>")
-				.prop("topic", false)
-				.prop("element", d)
-				.text(d.occupation);
+	$("#jobSearch").change(function(){
+		if($(this).val() == ""){
+			updateTable(FULL_DATA_SET,null);
 		}
-	});
-	
-	for(var i=0; i < OCCUPATION_MAJOR_GROUPS.length; i++){
-		if(OCCUPATION_MAJOR_GROUPS[i].indexOf(searchString) > -1){
-			suggestions.push($("<div>")
-				.prop("topic", false)
-				.prop("element", OCCUPATION_MAJOR_GROUPS[i])
-				.text(OCCUPATION_MAJOR_GROUPS[i]));
-		}
-	}*/
-	
-	$("#jobSearch").change(function(e){
-		//on change, check if val is empty.
 	})
 	
+		
 	var jobs = svg.selectAll(".jobs")
 		.data(data)
 		.enter()
@@ -337,7 +342,7 @@ function drawVis(dataContainer){
 					}
 				})
 				.select("rect")
-				.attr("fill",function(d){ return colorScale(d.occupationMajorGroup); })
+				.attr("fill",function(d){ return occupation !== null ? colorScale(d.occupationMajorGroup) : "silver"; })
 				.select("text")
 				.attr("opacity", 0)
 				.transition()
@@ -347,7 +352,7 @@ function drawVis(dataContainer){
 				});
 				
 			if(filteredData.length === FULL_DATA_SET_LENGTH){
-				var color = colorScale(occupation);
+				var color = occupation !== null ? colorScale(occupation) : "silver";
 				console.log(color);
 				console.log(occupation);
 				$("#preview").get(0).update(occupation, color);
@@ -374,6 +379,34 @@ function drawVis(dataContainer){
 				$("#preview").get(0).update(currentOccupation, color);
 			});
 		}
-	
+}
 
+var FilterSuggestions = function(data){
+	var _this = this;
+	var suggestionBox = $("<div>")
+		.attr("class", "suggestionsContainer");
+	
+	var occupations = data.map(function(d){
+		return $("<div>")
+			.attr("class", "suggestion")
+			.text(d.occupation);
+	});
+	
+	var suggestions = null;
+	_this.withFilter = function(searchTerm){
+		suggestions = null;
+		suggestions = occupations.filter(function(d){
+			if(d.get(0).textContent.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1){
+				return d;
+			}
+		});
+		return this;
+	};
+	
+	_this.build = function(){
+		suggestionBox.append(suggestions);
+		return suggestionBox;
+	};
+	
+	return _this;	
 }

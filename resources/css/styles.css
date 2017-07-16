@@ -77,3 +77,25 @@ body{
 	font-family: 'Lato';
 	font-weight:300;
 }
+
+.suggestionsContainer {
+    	position: absolute;
+    	left: 58px;
+    	top: 449px;
+    	width: 171px;
+    	z-index: 1;
+    	background-color: white;
+    	border: solid 1px threedface;
+    	font-family: lato;
+    	font-weight: 300;
+    	font-size: 12px;
+}
+
+.suggestion{
+	padding:5px;
+}
+
+.suggestion:hover{
+	background-color: dodgerblue;
+	border-radius: 2px;
+}
