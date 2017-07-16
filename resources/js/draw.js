@@ -33,6 +33,10 @@ function drawVis(dataContainer){
 		.domain([0,data.length-1])
 		.range([175, h-50])
 		
+	var xScale = d3.scaleLinear()
+		.domain([0, 0.005, 0.01, 0.1, 0.2, 0.4, 0.75, 1])
+		.range([0, w*.1, w*.2, w*.4, w*.6, w*.75, w*.9, w-100])
+		
 	var fontScale = d3.scaleLinear()
 		.domain([702, 1])
 		.range([8, 32])
@@ -109,7 +113,6 @@ function drawVis(dataContainer){
 			$(".suggestionsContainer").remove()
 			var occupation = this.textContent;
 			var occupationMajorGroup;
-			console.log(occupation);
 			var filteredData = FULL_DATA_SET.filter(function(d){
 				if(d.occupation == occupation){
 					occupationMajorGroup = d.occupationMajorGroup;
@@ -121,16 +124,43 @@ function drawVis(dataContainer){
 	});
 	
 	$("#jobSearch").change(function(){
-		if($(this).val() == ""){
-			updateTable(FULL_DATA_SET,null);
+		var searchTerm = $(this).val();
+		if(searchTerm == ""){
+			updateTable(FULL_DATA_SET, null);
+		}else{
+			var filteredData = FULL_DATA_SET.filter(function(d){
+				if(d.occupation.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1){
+					occupationMajorGroup = d.occupationMajorGroup;
+					return d;
+				}
+			});
+			updateTable(filteredData, null);
 		}
 	})
+	
+	var avg = FULL_DATA_SET.reduce(function(total, d, i, arr){
+					return total + d.probability;
+				}, 0)/FULL_DATA_SET_LENGTH;
+	var avgLine = svg.selectAll(".line")
+		.data([avg])
+		.enter()
+		.append("line")
+		.attr("class", "industryAverage")
+		.attr("x1", xScale(avg))
+		.attr("x2", xScale(avg))
+		.attr("y1", yScale(0))
+		.attr("y2", yScale(FULL_DATA_SET_LENGTH))
+		.attr("stroke", "red")
+		.attr("stroke-dasharray", "10 10")
+		.attr("stroke-width", 0)
+					
 	
 		
 	var jobs = svg.selectAll(".jobs")
 		.data(data)
 		.enter()
-		.append("g")
+		.insert("g", "line")
+		//.append("g")
 		.attr("class", "jobGroups")
 		.attr("transform", function(d,i){
 			return "translate(50, " + yScale(i) + ")";
@@ -176,7 +206,8 @@ function drawVis(dataContainer){
 				$.map(data, function(d){
 					return d.occupationMajorGroup;})))
 		.enter()
-		.append("g")
+		.insert("g", "line")
+		//.append("g")
 		.attr("class", "legend")
 		.attr("transform", function(d,i){
 			var x = (Math.floor(i/4) * 200) + 50;
@@ -274,7 +305,8 @@ function drawVis(dataContainer){
 				.remove();
 			
 			var enter = jobGroups.enter()
-				.append("g")
+				.insert("g", "line")
+				//.append("g")
 				.attr("class", "jobGroups")
 				.attr("transform", function(d,i){
 					return "translate(200, " + yScale(i) + ")";
@@ -286,7 +318,7 @@ function drawVis(dataContainer){
 						.enter()
 						.append("rect")
 						.attr("height",22)
-						.attr("width",w-100)
+						.attr("width", function(d){ return filteredData.length === FULL_DATA_SET_LENGTH ? w-100 : xScale(d.probability);})
 						.attr("x", 0)
 						.attr("y", 0)
 						.attr("fill", "rgba(255, 255, 255, 0)")
@@ -342,21 +374,36 @@ function drawVis(dataContainer){
 					}
 				})
 				.select("rect")
-				.attr("fill",function(d){ return occupation !== null ? colorScale(d.occupationMajorGroup) : "silver"; })
+					.attr("width", function(d){ return filteredData.length === FULL_DATA_SET_LENGTH ? w-100 : xScale(d.probability);})
+					.attr("fill",function(d){ return colorScale(d.occupationMajorGroup); })
 				.select("text")
-				.attr("opacity", 0)
-				.transition()
-				.attr("opacity", 1)
-				.text(function(d){
-					return rankFormatter(d.rank) + " | " + d.occupation + " | " + (d.probability * 100).toFixed(2) + "%";
-				});
-				
+					.attr("opacity", 0)
+					.transition()
+					.attr("opacity", 1)
+					.text(function(d){
+						return rankFormatter(d.rank) + " | " + d.occupation + " | " + (d.probability * 100).toFixed(2) + "%";
+					});
+								
 			if(filteredData.length === FULL_DATA_SET_LENGTH){
+				svg.select(".industryAverage")
+					.transition()
+					.attr("stroke-width",0);
 				var color = occupation !== null ? colorScale(occupation) : "silver";
-				console.log(color);
-				console.log(occupation);
 				$("#preview").get(0).update(occupation, color);
 			}else{
+				var avg = filteredData.reduce(function(total, d, i, arr){
+					return total + d.probability;
+				}, 0)/filteredData.length;
+				svg.selectAll(".industryAverage")
+					.data([avg])
+					.transition()
+					.duration(300)
+					.attr("x1", xScale(avg))
+					.attr("x2", xScale(avg))
+					.attr("y1", yScale(0))
+					.attr("y2", yScale(filteredData.length))
+					.attr("stroke", "red")
+					.attr("stroke-width", 3)
 				$("#preview").get(0).hide();
 			}
 			
