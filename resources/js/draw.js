@@ -288,6 +288,13 @@ function drawVis(dataContainer){
 			};
 			
 			jobGroups.exit()
+				.filter(function(d,i){
+					if(d.rank-1 < 100){
+						return d;
+					}else{
+						d3.select(d).remove()
+					}
+				})
 				.transition()
 				.duration(animations.exit.duration)
 				.delay(animations.exit.delay)
@@ -309,7 +316,10 @@ function drawVis(dataContainer){
 				//.append("g")
 				.attr("class", "jobGroups")
 				.attr("transform", function(d,i){
-					return "translate(200, " + yScale(i) + ")";
+					if(d.rank-1 < 100){
+						return "translate(200, " + yScale(d.rank-1) + ")";
+					}
+					return "translate(50, " + yScale(d.rank-1) + ")";
 				})
 				.each(function(d){			
 					var g = d3.select(this)
@@ -345,7 +355,12 @@ function drawVis(dataContainer){
 						.attr("opacity", 1);
 				});
 			
-			enter.transition()
+			enter.filter(function(d,i){
+					if(d.rank-1 < 100){
+						return d;
+					}
+				})
+				.transition()
 				.duration(animations.enter.duration)
 				.delay(animations.enter.delay)
 				.attrTween("transform", function(d,index){
@@ -390,6 +405,10 @@ function drawVis(dataContainer){
 					.attr("stroke-width",0);
 				var color = occupation !== null ? colorScale(occupation) : "silver";
 				$("#preview").get(0).update(occupation, color);
+			}else if(filteredData.length == 1){
+				svg.select(".industryAverage")
+					.transition()
+					.attr("stroke-width",0);
 			}else{
 				var avg = filteredData.reduce(function(total, d, i, arr){
 					return total + d.probability;
